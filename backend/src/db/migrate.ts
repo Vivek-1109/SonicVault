@@ -31,8 +31,7 @@ export function runMigrations(): void {
   // Read migration files from the migrations directory
   const migrationsDir = path.join(__dirname, 'migrations');
   if (!fs.existsSync(migrationsDir)) {
-    console.log('📂 No migrations directory found, skipping migrations.');
-    return;
+    throw new Error(`🚨 Migrations directory not found at ${migrationsDir}. Build step likely failed to copy .sql files.`);
   }
 
   const migrationFiles = fs
