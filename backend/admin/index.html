@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SonicVault Admin</title>
+  <link rel="stylesheet" href="css/admin.css">
+  <!-- Ionicons for icons -->
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  
+  <!-- Toast Notifications Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Login Screen -->
+  <div id="login-screen" class="login-screen hidden">
+    <div class="login-container">
+      <div class="login-logo">
+        <div class="logo-icon">
+          <ion-icon name="musical-notes" size="large" style="color: var(--green-primary); font-size: 48px;"></ion-icon>
+        </div>
+        <h1>SonicVault</h1>
+        <div class="login-subtitle">Admin Dashboard</div>
+      </div>
+      
+      <form id="login-form" class="login-form">
+        <div id="login-error" class="login-error hidden"></div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="login-email" required placeholder="admin@example.com">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="login-password" required placeholder="••••••••">
+        </div>
+        <button type="submit" id="login-btn" class="btn btn-primary btn-full">
+          <span class="btn-text">Login</span>
+          <span class="btn-loader spinner hidden"></span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div id="app" class="app hidden">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <ion-icon name="musical-notes" style="color: var(--green-primary);"></ion-icon>
+          SonicVault
+        </div>
+      </div>
+      
+      <ul class="nav-list">
+        <li class="nav-item active" data-page="dashboard">
+          <ion-icon name="home-outline"></ion-icon> Dashboard
+        </li>
+        <li class="nav-item" data-page="upload">
+          <ion-icon name="cloud-upload-outline"></ion-icon> Upload
+        </li>
+        <li class="nav-item" data-page="songs">
+          <ion-icon name="musical-notes-outline"></ion-icon> Songs
+        </li>
+        <li class="nav-item" data-page="playlists">
+          <ion-icon name="list-outline"></ion-icon> Playlists
+        </li>
+        <li class="nav-item" data-page="devices">
+          <ion-icon name="hardware-chip-outline"></ion-icon> Devices
+        </li>
+      </ul>
+      
+      <div class="sidebar-footer">
+        <div class="nav-item" id="logout-btn" style="color: var(--red-primary);">
+          <ion-icon name="log-out-outline"></ion-icon> Logout
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      
+      <!-- Dashboard Page -->
+      <div id="page-dashboard" class="page active">
+        <div class="page-header">
+          <h2>Dashboard</h2>
+          <div class="page-subtitle">Welcome back to SonicVault</div>
+        </div>
+        
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon songs-icon"><ion-icon name="musical-note"></ion-icon></div>
+            <div>
+              <span class="stat-value" id="stat-songs">0</span>
+              <span class="stat-label">Total Songs</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon playlists-icon"><ion-icon name="list"></ion-icon></div>
+            <div>
+              <span class="stat-value" id="stat-playlists">0</span>
+              <span class="stat-label">Playlists</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon devices-icon"><ion-icon name="hardware-chip"></ion-icon></div>
+            <div>
+              <span class="stat-value" id="stat-devices">0</span>
+              <span class="stat-label">Active Devices</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon storage-icon"><ion-icon name="server"></ion-icon></div>
+            <div>
+              <span class="stat-value" id="stat-storage">0 MB</span>
+              <span class="stat-label">Storage Used</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="dashboard-sections">
+          <div class="section-card">
+            <h3>Recent Uploads</h3>
+            <div id="recent-uploads-list" class="song-list-compact"></div>
+          </div>
+          <div class="section-card">
+            <h3>Needs Metadata Review</h3>
+            <div id="needs-review-list" class="song-list-compact"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upload Page -->
+      <div id="page-upload" class="page">
+        <div class="page-header">
+          <h2>Upload Music</h2>
+          <div class="page-subtitle">Drag and drop MP3 files to add them to your library</div>
+        </div>
+        
+        <div id="upload-dropzone" class="upload-dropzone">
+          <input type="file" id="upload-file-input" class="file-input" multiple accept="audio/mpeg,audio/mp3">
+          <div class="dropzone-content">
+            <ion-icon name="cloud-upload" size="large" style="font-size: 64px;"></ion-icon>
+            <div class="dropzone-text">Choose files or drag them here</div>
+            <div class="dropzone-subtext">Only MP3 files are supported. ID3 tags will be extracted automatically.</div>
+          </div>
+        </div>
+        
+        <div id="upload-queue" class="upload-queue hidden">
+          <div class="upload-queue-header">
+            <h3>Upload Queue</h3>
+            <button id="clear-queue-btn" class="btn btn-ghost btn-sm hidden">Clear Completed</button>
+          </div>
+          <div id="upload-items" class="upload-items">
+            <!-- Upload items rendered here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Songs Page -->
+      <div id="page-songs" class="page">
+        <div class="page-header page-header-row">
+          <div>
+            <h2>Songs</h2>
+            <div class="page-subtitle" id="songs-count">Loading...</div>
+          </div>
+          <div class="page-actions">
+            <div class="search-box">
+              <ion-icon name="search"></ion-icon>
+              <input type="text" id="songs-search" class="search-input" placeholder="Search songs...">
+            </div>
+            <button class="btn btn-primary" onclick="window.navigateTo('upload')">
+              <ion-icon name="add"></ion-icon> Upload
+            </button>
+          </div>
+        </div>
+        
+        <div id="songs-empty" class="empty-state hidden">
+          <ion-icon name="musical-notes" style="font-size: 64px; color: var(--text-tertiary); margin-bottom: 16px;"></ion-icon>
+          <h3>No songs found</h3>
+          <p>Upload some music to get started</p>
+          <button class="btn btn-primary" style="margin-top: 16px;" onclick="window.navigateTo('upload')">Upload Music</button>
+        </div>
+        
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th width="40"></th>
+                <th>Title</th>
+                <th>Artist</th>
+                <th>Album</th>
+                <th>Duration</th>
+                <th width="80">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="songs-tbody">
+              <!-- Songs rows rendered here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Playlists Page -->
+      <div id="page-playlists" class="page">
+        <div class="page-header page-header-row">
+          <div>
+            <h2>Playlists</h2>
+            <div class="page-subtitle" id="playlists-count">Loading...</div>
+          </div>
+          <button class="btn btn-primary" id="create-playlist-btn">
+            <ion-icon name="add"></ion-icon> Create Playlist
+          </button>
+        </div>
+        
+        <div id="playlists-empty" class="empty-state hidden">
+          <ion-icon name="list" style="font-size: 64px; color: var(--text-tertiary); margin-bottom: 16px;"></ion-icon>
+          <h3>No playlists yet</h3>
+          <p>Create a playlist to organize your music</p>
+          <button class="btn btn-primary" id="create-first-playlist-btn" style="margin-top: 16px;">Create Playlist</button>
+        </div>
+        
+        <div id="playlists-grid" class="playlists-grid grid-view">
+          <!-- Playlist cards rendered here -->
+        </div>
+      </div>
+
+      <!-- Devices Page -->
+      <div id="page-devices" class="page">
+        <div class="page-header">
+          <h2>Devices</h2>
+          <div class="page-subtitle">Manage devices signed into your account</div>
+        </div>
+        
+        <div id="devices-empty" class="empty-state hidden">
+          <p>No devices found</p>
+        </div>
+        
+        <div id="devices-list" class="devices-list">
+          <!-- Device rows rendered here -->
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Modals -->
+  
+  <!-- Confirm Modal -->
+  <div id="confirm-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="confirm-title">Confirm</h3>
+        <button class="modal-close" data-dismiss="confirm-modal"><ion-icon name="close"></ion-icon></button>
+      </div>
+      <div class="modal-body">
+        <p id="confirm-message"></p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" data-dismiss="confirm-modal">Cancel</button>
+        <button id="confirm-btn-yes" class="btn btn-danger">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Song Modal -->
+  <div id="song-edit-modal" class="modal-overlay hidden">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3>Edit Song Metadata</h3>
+        <button class="modal-close" data-dismiss="song-edit-modal"><ion-icon name="close"></ion-icon></button>
+      </div>
+      <div class="modal-body">
+        <form id="song-edit-form">
+          <input type="hidden" id="edit-song-id">
+          
+          <div style="display: flex; gap: 24px;">
+            <div style="width: 140px; flex-shrink: 0;">
+              <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">Artwork</label>
+              <div class="artwork-upload" style="position: relative; width: 140px; height: 140px; background: var(--bg-surface-light); border-radius: var(--radius-md); overflow: hidden; cursor: pointer; border: 1px dashed var(--border-light);">
+                <img id="edit-artwork-preview" src="" class="hidden" style="width: 100%; height: 100%; object-fit: cover;">
+                <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; color: var(--text-tertiary);">
+                  <ion-icon name="image" style="font-size: 32px;"></ion-icon>
+                  <span style="font-size: 11px; margin-top: 4px;">Click to change</span>
+                </div>
+                <input type="file" id="edit-artwork-file" accept="image/jpeg,image/png" style="position: absolute; inset: 0; opacity: 0; cursor: pointer; z-index: 2;">
+              </div>
+            </div>
+            
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
+              <div class="form-group">
+                <label>Title</label>
+                <input type="text" id="edit-title" required>
+              </div>
+              
+              <div class="form-group">
+                <label>Artist</label>
+                <input type="text" id="edit-artist" required>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Album</label>
+                  <input type="text" id="edit-album">
+                </div>
+                <div class="form-group" style="flex: 0.5;">
+                  <label>Track #</label>
+                  <input type="number" id="edit-track" min="1">
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label>Genre</label>
+                <input type="text" id="edit-genre">
+              </div>
+            </div>
+          </div>
+          
+          <div class="modal-footer" style="margin-top: 24px; margin-bottom: -16px; margin-left: -24px; margin-right: -24px; border-top: 1px solid var(--border-color); padding: 16px 24px; display: flex; justify-content: flex-end; gap: 12px; background: var(--bg-surface);">
+            <button type="button" class="btn btn-ghost" data-dismiss="song-edit-modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Playlist Form Modal -->
+  <div id="playlist-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="playlist-modal-title">Create Playlist</h3>
+        <button class="modal-close" data-dismiss="playlist-modal"><ion-icon name="close"></ion-icon></button>
+      </div>
+      <form id="playlist-form">
+        <div class="modal-body">
+          <input type="hidden" id="playlist-edit-id">
+          <div class="form-group">
+            <label>Name</label>
+            <input type="text" id="playlist-name" required placeholder="e.g. Summer Vibes">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" data-dismiss="playlist-modal">Cancel</button>
+          <button type="submit" id="playlist-submit-btn" class="btn btn-primary">Create</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Playlist Detail Modal -->
+  <div id="playlist-detail-modal" class="modal-overlay hidden">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3 id="playlist-detail-title">Playlist</h3>
+        <button class="modal-close" data-dismiss="playlist-detail-modal"><ion-icon name="close"></ion-icon></button>
+      </div>
+      <div class="modal-body" style="padding: 0;">
+        <div style="padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between;">
+          <h4 style="font-size: 16px; font-weight: 600;">Songs</h4>
+          <button class="btn btn-ghost btn-sm" id="add-songs-to-playlist-btn">
+            <ion-icon name="add"></ion-icon> Add Songs
+          </button>
+        </div>
+        <div id="playlist-detail-songs" style="max-height: 400px; overflow-y: auto; padding: 12px;">
+          <!-- Playlist songs list -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/upload.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
